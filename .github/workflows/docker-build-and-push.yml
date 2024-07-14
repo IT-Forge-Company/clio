@@ -27,6 +27,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine version tag
+        id: vars
+        run: |
+          if [ ! -z "${{ github.ref_name }}" ]; then
+            VERSION_TAG=${{ github.ref_name }}
+          else
+            VERSION_TAG=$(echo ${{ github.sha }} | head -c 7)
+          fi
+          echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
+
       - name: Convert repository name to lowercase
         id: repo_name
         run: echo "REPO_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -37,4 +47,6 @@ jobs:
           file: ./install/Dockerfile
           context: .
           push: true
-          tags: ghcr.io/${{ env.REPO_NAME }}:latest
+          tags: |
+            ghcr.io/${{ env.REPO_NAME }}:latest
+            ghcr.io/${{ env.REPO_NAME }}:${{ env.VERSION_TAG }}
